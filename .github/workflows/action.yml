@@ -1,0 +1,15 @@
+name: 'Github Actions Weather Bot'
+
+on:
+  schedule:
+    '0 7 * * *'
+
+jobs:
+  bot:
+    steps:
+      - name: 'Install Node'
+        uses: actions/setup-node@v1
+      - name: 'Install Project Dependencies'
+        run: npm install
+      - name: 'Run Bot'
+        run: node index.js
