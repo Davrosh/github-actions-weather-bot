@@ -1,6 +1,7 @@
 require('dotenv').config()
 const fetch = require('node-fetch')
 const Telegram = require('node-telegram-bot-api')
+const Discord = require("discord.js")
 const bot = new Telegram(process.env.TELEGRAM_TOKEN)
 const weatherToken = process.env.WEATHER_API_TOKEN
 const weatherURL = new URL("https://api.openweathermap.org/data/2.5/weather")
@@ -18,10 +19,36 @@ const getWeatherData = async () => {
 const generateWeatherMessage = weatherData => 
 `The weather in ${weatherData.name}, ${weatherData.sys.country}: ${weatherData.weather[0].description}. The current temperature is ${weatherData.main.temp}, with ${weatherData.main.humidity}% humidity (temperture feels like ${weatherData.main.feels_like}). ` 
 
+
+const client = new Discord.Client()
+var weatherString = ""
+
+client.on("ready", () => {
+  console.log(`Logged in as ${client.user.tag}!`)
+  client.guilds.cache.forEach((guild) => { 
+         let defaultChannel = "";
+         guild.channels.cache.forEach((channel) => {
+               if(channel.type == "text" && defaultChannel == "") {
+		             if(channel.permissionsFor(guild.me).has("SEND_MESSAGES")) {
+		                 defaultChannel = channel;
+		             }
+               }
+         })
+         defaultChannel.send(weatherString) 
+  })
+})
+
 const main = async () => {
 	const weatherData = await getWeatherData()
-	const weatherString = generateWeatherMessage(weatherData)
+	weatherString = generateWeatherMessage(weatherData)
 	bot.sendMessage(process.env.TELEGRAM_CHAT_ID, weatherString)
+	client.login(process.env.DISCORD_BOT_TOKEN)
+	setTimeout(function(){ 
+    client.destroy()
+	}, 3000)
+	
+
 }
+
 
 main()
